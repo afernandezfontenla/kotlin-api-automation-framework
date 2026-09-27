@@ -1,0 +1,16 @@
+# Gradle temporal y de compilación
+.gradle/
+build/
+.bin/
+.out/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Logs y sistema operativo
+*.log
+.DS_Store
+Thumbs.db
