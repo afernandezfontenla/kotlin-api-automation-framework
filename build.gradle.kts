@@ -1,34 +1,52 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 plugins {
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.serialization") version "1.9.22"
+    kotlin("jvm") version "2.2.0"
+    kotlin("plugin.serialization") version "2.2.0"
 }
 
-group = "com.api.automation"
-version = "1.0-SNAPSHOT"
+group = "com.afernandezfontenla"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
 }
 
-val ktorVersion = "2.3.8"
-val testngVersion = "7.9.0"
+val ktorVersion = "3.2.0"
 
 dependencies {
-    // TestNG para el motor de pruebas
-    testImplementation("org.testng:testng:$testngVersion")
-
-    // Ktor Client (Core y motor CIO para hacer peticiones HTTP)
+    // HTTP client
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
 
-    // Ktor ContentNegotiation y Kotlinx Serialization (para manejar JSON fácilmente)
-    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    // JSON <-> DTOs
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
-    // Kotlin standard library
-    implementation(kotlin("stdlib"))
+    // Logging API (the backend lives in the test classpath)
+    implementation("org.slf4j:slf4j-api:2.0.17")
+
+    // Test stack
+    testImplementation("org.testng:testng:7.11.0")
+    testImplementation("org.assertj:assertj-core:3.27.3")
+    testRuntimeOnly("ch.qos.logback:logback-classic:1.5.18")
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 tasks.test {
     useTestNG()
+
+    // Allow overriding the target environment: ./gradlew test -Dapi.baseUrl=https://my-env.example.com
+    listOf("api.baseUrl", "api.username", "api.password").forEach { key ->
+        System.getProperty(key)?.let { systemProperty(key, it) }
+    }
+
+    testLogging {
+        events("passed", "skipped", "failed")
+        showStandardStreams = true
+        exceptionFormat = TestExceptionFormat.FULL
+    }
 }
